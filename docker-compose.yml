@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: kbju
+      POSTGRES_PASSWORD: kbju
+      POSTGRES_DB: kbju
+    ports:
+      - "5432:5432"
+    volumes:
+      - kbju_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kbju"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  kbju_pgdata:
