@@ -6,7 +6,8 @@ AI-промптов — в [`docs/PROMPTS.md`](docs/PROMPTS.md).
 
 ## Запуск бэкенда локально
 
-1. Поднять базу данных:
+1. Поднять базу данных — через [Postgres.app](https://postgresapp.com) (см. `createuser`/`createdb`
+   в документации приложения) или через Docker:
 
    ```bash
    docker compose up -d db
@@ -43,6 +44,20 @@ AI-промптов — в [`docs/PROMPTS.md`](docs/PROMPTS.md).
 
 5. Открыть интерактивную документацию API: http://localhost:8000/docs
 
+## Запуск фронтенда локально
+
+Бэкенд должен быть уже запущен (см. выше) — фронтенд обращается к нему по `http://localhost:8000`.
+
+```bash
+cd frontend
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Открыть http://localhost:3000 — первый экран попросит зарегистрироваться, затем
+заполнить профиль (для расчёта целевых КБЖУ), после чего откроется дашборд.
+
 ## Структура
 
 ```
@@ -52,10 +67,21 @@ backend/app/
   api/routes/   # FastAPI-роуты (auth, users, diary, recognition, recommendations)
   services/     # Бизнес-логика: расчёт КБЖУ, хранилище фото, вызовы Claude
   core/         # Хеширование паролей, JWT
+
+frontend/src/
+  types/        # TypeScript-типы, зеркалящие backend-схемы
+  lib/          # API-клиент (fetch + refresh токена), типизированные вызовы эндпоинтов
+  context/      # AuthContext — токены, login/register/logout
+  components/   # Переиспользуемые UI-блоки (формы, списки, прогресс-бары)
+  pages/        # Страницы: Login, Register, Onboarding, Dashboard, Diary, Recognize, Recommendations, Profile
 ```
 
 ## Статус
 
-Каркас готов: auth, профиль с расчётом целевых КБЖУ, дневник питания, распознавание
-фото через Claude Vision, генерация рекомендаций через Claude. Ещё не сделано —
-см. раздел "Роадмап" в [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+MVP полностью работает end-to-end: auth, профиль с расчётом целевых КБЖУ, дневник
+питания, распознавание фото через Claude Vision, генерация рекомендаций через Claude —
+и фронтенд на React, покрывающий весь этот путь. Проверено вживую в браузере
+(регистрация → онбординг → дашборд → дневник → профиль → рекомендации).
+
+Ещё не сделано — см. раздел "Роадмап" в [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md):
+продакшн-хранилище фото (сейчас локальный диск), деплой, наполнение справочника продуктов.
