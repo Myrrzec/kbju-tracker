@@ -69,6 +69,21 @@ def analyze_food_photo(image_bytes: bytes, extension: str) -> tuple[list[Recogni
         raise RecognitionError("AI не вернул структурированный результат")
 
     payload = tool_use_block.input
-    items = [RecognizedFoodItem(**item) for item in payload.get("items", [])]
+    raw_items = payload.get("items", [])
+    # Claude usually returns a list of objects as specified in the tool schema, but
+    # occasionally restructures it as an object keyed by item name/index instead —
+    # normalize both shapes rather than crashing on the mismatch.
+    if isinstance(raw_items, dict):
+        raw_items = list(raw_items.values())
+
+    items = []
+    for raw_item in raw_items:
+        if not isinstance(raw_item, dict):
+            continue
+        try:
+            items.append(RecognizedFoodItem(**raw_item))
+        except TypeError:
+            continue
+
     notes = payload.get("notes")
     return items, notes
