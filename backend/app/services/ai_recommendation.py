@@ -8,6 +8,7 @@ from app.config import get_settings
 from app.models.diary import MealEntry
 from app.models.profile import UserProfile
 from app.schemas.user import DailyTargets
+from app.services.ai_errors import friendly_ai_error
 from app.services.prompts import RECOMMENDATION_SYSTEM_PROMPT, build_recommendation_user_prompt
 
 settings = get_settings()
@@ -40,20 +41,21 @@ def _format_targets_summary(targets: DailyTargets) -> str:
     )
 
 
-def _format_period_summary(db: Session, user_id, period_days: int) -> str:
+def _format_period_summary(db: Session, user_id, period_days: int, tz_name: str) -> str:
     since = datetime.now(timezone.utc) - timedelta(days=period_days)
+    local_day = func.date(func.timezone(tz_name, MealEntry.logged_at))
 
     daily_totals = db.execute(
         select(
-            func.date(MealEntry.logged_at).label("day"),
+            local_day.label("day"),
             func.sum(MealEntry.calories).label("calories"),
             func.sum(MealEntry.protein_g).label("protein_g"),
             func.sum(MealEntry.fat_g).label("fat_g"),
             func.sum(MealEntry.carbs_g).label("carbs_g"),
         )
         .where(MealEntry.user_id == user_id, MealEntry.logged_at >= since)
-        .group_by(func.date(MealEntry.logged_at))
-        .order_by(func.date(MealEntry.logged_at))
+        .group_by(local_day)
+        .order_by(local_day)
     ).all()
 
     if not daily_totals:
@@ -67,10 +69,12 @@ def _format_period_summary(db: Session, user_id, period_days: int) -> str:
     return "\n".join(lines)
 
 
-def generate_recommendation(db: Session, user_id, profile: UserProfile, targets: DailyTargets, period_days: int = 7) -> str:
+def generate_recommendation(
+    db: Session, user_id, profile: UserProfile, targets: DailyTargets, period_days: int = 7, tz_name: str = "UTC"
+) -> str:
     profile_summary = _format_profile_summary(profile)
     targets_summary = _format_targets_summary(targets)
-    period_summary = _format_period_summary(db, user_id, period_days)
+    period_summary = _format_period_summary(db, user_id, period_days, tz_name)
 
     user_prompt = build_recommendation_user_prompt(profile_summary, targets_summary, period_summary)
 
@@ -82,7 +86,7 @@ def generate_recommendation(db: Session, user_id, profile: UserProfile, targets:
             messages=[{"role": "user", "content": user_prompt}],
         )
     except anthropic.APIError as exc:
-        raise RecommendationError(f"Ошибка обращения к AI: {exc}") from exc
+        raise RecommendationError(friendly_ai_error(exc)) from exc
 
     text_block = next((block for block in response.content if block.type == "text"), None)
     if text_block is None:

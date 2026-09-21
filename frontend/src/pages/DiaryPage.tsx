@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as diaryApi from "../lib/api/diary";
-import { todayStr } from "../lib/date";
+import { localNoonIso, todayStr } from "../lib/date";
 import { AddEntryPanel } from "../components/AddEntryPanel";
 import { EntryList } from "../components/EntryList";
 
@@ -48,7 +48,7 @@ export function DiaryPage() {
         </div>
       )}
 
-      <AddEntryPanel title="Записи за день" date={date} loggedAt={date === todayStr() ? undefined : `${date}T12:00:00`}>
+      <AddEntryPanel title="Записи за день" date={date} loggedAt={date === todayStr() ? undefined : localNoonIso(date)}>
         {summary && <EntryList entries={summary.entries} onDelete={(id) => deleteMutation.mutate(id)} />}
       </AddEntryPanel>
     </div>

@@ -1,4 +1,5 @@
 import { apiRequest } from "../apiClient";
+import { userTimeZone } from "../date";
 import type { DailySummary, MealEntry, MealEntryCreatePayload } from "../../types";
 
 export function createEntry(payload: MealEntryCreatePayload) {
@@ -10,5 +11,5 @@ export function deleteEntry(id: string) {
 }
 
 export function getDailySummary(day: string) {
-  return apiRequest<DailySummary>(`/diary/summary?day=${day}`);
+  return apiRequest<DailySummary>(`/diary/summary?day=${day}&tz=${encodeURIComponent(userTimeZone)}`);
 }

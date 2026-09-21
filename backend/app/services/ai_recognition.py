@@ -10,6 +10,7 @@ logger.setLevel(logging.INFO)
 
 from app.config import get_settings
 from app.schemas.recognition import RecognizedFoodItem
+from app.services.ai_errors import friendly_ai_error
 from app.services.prompts import FOOD_RECOGNITION_SYSTEM_PROMPT, FOOD_RECOGNITION_TOOL
 
 settings = get_settings()
@@ -67,7 +68,7 @@ def analyze_food_photo(image_bytes: bytes, extension: str) -> tuple[list[Recogni
             ],
         )
     except anthropic.APIError as exc:
-        raise RecognitionError(f"Ошибка обращения к AI: {exc}") from exc
+        raise RecognitionError(friendly_ai_error(exc)) from exc
 
     logger.info("stop_reason=%s content_types=%s", response.stop_reason, [b.type for b in response.content])
 

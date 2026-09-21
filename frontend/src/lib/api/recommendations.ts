@@ -1,4 +1,5 @@
 import { apiRequest } from "../apiClient";
+import { userTimeZone } from "../date";
 import type { Recommendation } from "../../types";
 
 export function getLatestRecommendation() {
@@ -6,7 +7,7 @@ export function getLatestRecommendation() {
 }
 
 export function generateRecommendation(periodDays = 7) {
-  return apiRequest<Recommendation>(`/recommendations/generate?period_days=${periodDays}`, {
+  return apiRequest<Recommendation>(`/recommendations/generate?period_days=${periodDays}&tz=${encodeURIComponent(userTimeZone)}`, {
     method: "POST",
   });
 }

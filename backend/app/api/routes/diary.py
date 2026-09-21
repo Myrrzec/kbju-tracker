@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.core.timezones import day_bounds, resolve_tz
 from app.database import get_db
 from app.models.diary import MealEntry
 from app.models.user import User
@@ -76,15 +77,17 @@ def delete_entry(
 @router.get("/summary", response_model=DailySummary)
 def get_daily_summary(
     day: date,
+    tz: str = "UTC",
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> DailySummary:
+    start, end = day_bounds(day, resolve_tz(tz))
     entries = db.execute(
         select(MealEntry)
         .where(
             MealEntry.user_id == current_user.id,
-            MealEntry.logged_at >= datetime.combine(day, datetime.min.time(), tzinfo=timezone.utc),
-            MealEntry.logged_at < datetime.combine(day, datetime.max.time(), tzinfo=timezone.utc),
+            MealEntry.logged_at >= start,
+            MealEntry.logged_at < end,
         )
         .order_by(MealEntry.logged_at)
     ).scalars().all()

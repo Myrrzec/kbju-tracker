@@ -13,3 +13,9 @@ export function formatDateRu(iso: string): string {
   const [y, m, d] = iso.split("-");
   return `${d}.${m}.${y}`;
 }
+
+export const userTimeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+
+export function localNoonIso(day: string): string {
+  return new Date(`${day}T12:00:00`).toISOString();
+}
