@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import * as usersApi from "../lib/api/users";
 import * as diaryApi from "../lib/api/diary";
 import { formatDateRu, todayStr } from "../lib/date";
@@ -10,7 +10,6 @@ import { EntryList } from "../components/EntryList";
 import { ApiError } from "../lib/apiClient";
 
 export function DashboardPage() {
-  const queryClient = useQueryClient();
   const today = todayStr();
 
   const targetsQuery = useQuery({
@@ -22,11 +21,6 @@ export function DashboardPage() {
   const summaryQuery = useQuery({
     queryKey: ["diary-summary", today],
     queryFn: () => diaryApi.getDailySummary(today),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: diaryApi.deleteEntry,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["diary-summary", today] }),
   });
 
   const profileIncomplete = targetsQuery.isError && targetsQuery.error instanceof ApiError && targetsQuery.error.status === 400;
@@ -62,7 +56,7 @@ export function DashboardPage() {
       )}
 
       <AddEntryPanel title="Приёмы пищи" date={today}>
-        {summary && <EntryList entries={summary.entries} onDelete={(id) => deleteMutation.mutate(id)} />}
+        {summary && <EntryList entries={summary.entries} date={today} />}
       </AddEntryPanel>
     </div>
   );

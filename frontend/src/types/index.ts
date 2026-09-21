@@ -78,6 +78,10 @@ export interface MealEntryCreatePayload {
   logged_at?: string;
 }
 
+export type MealEntryUpdatePayload = Partial<
+  Pick<MealEntryCreatePayload, "name" | "meal_type" | "grams" | "calories" | "protein_g" | "fat_g" | "carbs_g">
+>;
+
 export interface DailySummary {
   date: string;
   total_calories: number;

@@ -1,16 +1,32 @@
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import * as diaryApi from "../lib/api/diary";
 import { groupIntoMeals } from "../lib/groupMeals";
 import type { MealEntry } from "../types";
+import { EntryForm } from "./EntryForm";
 
 interface EntryListProps {
   entries: MealEntry[];
-  onDelete: (id: string) => void;
+  date: string;
 }
 
 function formatTime(date: Date): string {
   return date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function EntryList({ entries, onDelete }: EntryListProps) {
+export function EntryList({ entries, date }: EntryListProps) {
+  const queryClient = useQueryClient();
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["diary-summary", date] });
+
+  const deleteMutation = useMutation({ mutationFn: diaryApi.deleteEntry, onSuccess: refresh });
+  const updateMutation = useMutation({
+    mutationFn: ({ id, ...payload }: { id: string } & Parameters<typeof diaryApi.updateEntry>[1]) =>
+      diaryApi.updateEntry(id, payload),
+    onSuccess: refresh,
+  });
+
   if (entries.length === 0) {
     return <p className="text-ink-2 py-6">Записей пока нет</p>;
   }
@@ -34,25 +50,62 @@ export function EntryList({ entries, onDelete }: EntryListProps) {
           </header>
           <ul>
             {meal.entries.map((entry) => (
-              <li
-                key={entry.id}
-                className="py-4 border-b border-line-soft last:border-b-0 flex items-center justify-between gap-4"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-[15px]">{entry.name}</p>
-                  <p className="text-[13px] text-ink-2">
-                    {entry.grams} г · {Math.round(entry.calories)} ккал · Б {Math.round(entry.protein_g)} Ж{" "}
-                    {Math.round(entry.fat_g)} У {Math.round(entry.carbs_g)}
-                    {entry.source === "photo_ai" && " · по фото"}
-                  </p>
-                </div>
-                <button
-                  onClick={() => onDelete(entry.id)}
-                  className="btn-ghost shrink-0"
-                  aria-label={`Удалить запись «${entry.name}»`}
-                >
-                  Удалить
-                </button>
+              <li key={entry.id} className="py-4 border-b border-line-soft last:border-b-0">
+                {editingId === entry.id ? (
+                  <EntryForm
+                    initial={{
+                      name: entry.name,
+                      meal_type: entry.meal_type,
+                      grams: entry.grams,
+                      calories: entry.calories,
+                      protein_g: entry.protein_g,
+                      fat_g: entry.fat_g,
+                      carbs_g: entry.carbs_g,
+                    }}
+                    submitLabel="Сохранить"
+                    onCancel={() => setEditingId(null)}
+                    onSubmit={async ({ name, meal_type, grams, calories, protein_g, fat_g, carbs_g }) => {
+                      await updateMutation.mutateAsync({
+                        id: entry.id,
+                        name,
+                        meal_type,
+                        grams,
+                        calories,
+                        protein_g,
+                        fat_g,
+                        carbs_g,
+                      });
+                      setEditingId(null);
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="truncate text-[15px]">{entry.name}</p>
+                      <p className="text-[13px] text-ink-2">
+                        {entry.grams} г · {Math.round(entry.calories)} ккал · Б {Math.round(entry.protein_g)} Ж{" "}
+                        {Math.round(entry.fat_g)} У {Math.round(entry.carbs_g)}
+                        {entry.source === "photo_ai" && " · по фото"}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0">
+                      <button
+                        onClick={() => setEditingId(entry.id)}
+                        className="btn-ghost"
+                        aria-label={`Изменить запись «${entry.name}»`}
+                      >
+                        Изменить
+                      </button>
+                      <button
+                        onClick={() => deleteMutation.mutate(entry.id)}
+                        className="btn-ghost"
+                        aria-label={`Удалить запись «${entry.name}»`}
+                      >
+                        Удалить
+                      </button>
+                    </div>
+                  </div>
+                )}
               </li>
             ))}
           </ul>

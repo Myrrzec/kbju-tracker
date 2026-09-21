@@ -1,22 +1,16 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import * as diaryApi from "../lib/api/diary";
 import { localNoonIso, todayStr } from "../lib/date";
 import { AddEntryPanel } from "../components/AddEntryPanel";
 import { EntryList } from "../components/EntryList";
 
 export function DiaryPage() {
-  const queryClient = useQueryClient();
   const [date, setDate] = useState(todayStr());
 
   const summaryQuery = useQuery({
     queryKey: ["diary-summary", date],
     queryFn: () => diaryApi.getDailySummary(date),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: diaryApi.deleteEntry,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["diary-summary", date] }),
   });
 
   const summary = summaryQuery.data;
@@ -49,7 +43,7 @@ export function DiaryPage() {
       )}
 
       <AddEntryPanel title="Записи за день" date={date} loggedAt={date === todayStr() ? undefined : localNoonIso(date)}>
-        {summary && <EntryList entries={summary.entries} onDelete={(id) => deleteMutation.mutate(id)} />}
+        {summary && <EntryList entries={summary.entries} date={date} />}
       </AddEntryPanel>
     </div>
   );

@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -30,6 +30,32 @@ def create_entry(
     db.commit()
     db.refresh(entry)
     return MealEntryOut.model_validate(entry)
+
+
+@router.get("/recent", response_model=list[MealEntryOut])
+def get_recent_entries(
+    limit: int = Query(default=8, ge=1, le=30),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[MealEntryOut]:
+    rows = db.execute(
+        select(MealEntry)
+        .where(MealEntry.user_id == current_user.id)
+        .order_by(MealEntry.logged_at.desc())
+        .limit(300)
+    ).scalars().all()
+
+    seen: set[str] = set()
+    unique: list[MealEntry] = []
+    for entry in rows:
+        key = entry.name.strip().lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(entry)
+        if len(unique) >= limit:
+            break
+    return [MealEntryOut.model_validate(e) for e in unique]
 
 
 def _get_owned_entry(db: Session, entry_id: uuid.UUID, user: User) -> MealEntry:
