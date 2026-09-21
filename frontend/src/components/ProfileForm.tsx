@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import type { ActivityLevel, Goal, Profile, ProfileUpdatePayload, Sex } from "../types";
 
 const ACTIVITY_LABELS: Record<ActivityLevel, string> = {
@@ -25,9 +25,10 @@ interface ProfileFormProps {
   initial: Profile;
   onSubmit: (payload: ProfileUpdatePayload) => Promise<unknown>;
   submitLabel: string;
+  extraAction?: ReactNode;
 }
 
-export function ProfileForm({ initial, onSubmit, submitLabel }: ProfileFormProps) {
+export function ProfileForm({ initial, onSubmit, submitLabel, extraAction }: ProfileFormProps) {
   const [name, setName] = useState(initial.name ?? "");
   const [sex, setSex] = useState<Sex | "">(initial.sex ?? "");
   const [birthDate, setBirthDate] = useState(initial.birth_date ? initial.birth_date.slice(0, 10) : "");
@@ -190,6 +191,7 @@ export function ProfileForm({ initial, onSubmit, submitLabel }: ProfileFormProps
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
+      <div className="flex items-center justify-between gap-3">
       <button
         type="submit"
         disabled={loading}
@@ -197,6 +199,8 @@ export function ProfileForm({ initial, onSubmit, submitLabel }: ProfileFormProps
       >
         {loading ? "Сохраняем..." : submitLabel}
       </button>
+        {extraAction}
+      </div>
     </form>
   );
 }

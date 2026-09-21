@@ -1,5 +1,4 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 
 const links = [
   { to: "/", label: "Сегодня" },
@@ -9,12 +8,10 @@ const links = [
 ];
 
 export function Layout() {
-  const { logout } = useAuth();
-
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-neutral-200 bg-white sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-center gap-4">
           <span className="font-semibold text-brand-700">КБЖУ Tracker</span>
           <nav className="flex gap-1 overflow-x-auto">
             {links.map((link) => (
@@ -32,9 +29,6 @@ export function Layout() {
               </NavLink>
             ))}
           </nav>
-          <button onClick={logout} className="text-sm text-neutral-400 hover:text-neutral-700 shrink-0">
-            Выйти
-          </button>
         </div>
       </header>
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-6">
