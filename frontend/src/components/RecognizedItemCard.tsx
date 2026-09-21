@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { MealEntryCreatePayload, RecognizedFoodItem } from "../types";
+import type { MealEntryCreatePayload, MealType, RecognizedFoodItem } from "../types";
 import { EntryForm } from "./EntryForm";
 
 const CONFIDENCE_LABELS: Record<string, { label: string; className: string }> = {
@@ -12,9 +12,10 @@ interface RecognizedItemCardProps {
   item: RecognizedFoodItem;
   photoUrl: string;
   onAdd: (payload: MealEntryCreatePayload) => Promise<unknown>;
+  mealType: MealType;
 }
 
-export function RecognizedItemCard({ item, photoUrl, onAdd }: RecognizedItemCardProps) {
+export function RecognizedItemCard({ item, photoUrl, onAdd, mealType }: RecognizedItemCardProps) {
   const [added, setAdded] = useState(false);
   const confidence = CONFIDENCE_LABELS[item.confidence] ?? CONFIDENCE_LABELS.medium;
 
@@ -44,6 +45,7 @@ export function RecognizedItemCard({ item, photoUrl, onAdd }: RecognizedItemCard
           source: "photo_ai",
         }}
         submitLabel="Добавить в дневник"
+        fixedMealType={mealType}
         onSubmit={async (payload) => {
           await onAdd(payload);
           setAdded(true);

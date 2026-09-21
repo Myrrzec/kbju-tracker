@@ -25,9 +25,10 @@ interface EntryFormProps {
   onSubmit: (payload: MealEntryCreatePayload) => Promise<unknown>;
   onCancel?: () => void;
   submitLabel?: string;
+  fixedMealType?: MealType;
 }
 
-export function EntryForm({ initial, onSubmit, onCancel, submitLabel = "Добавить" }: EntryFormProps) {
+export function EntryForm({ initial, onSubmit, onCancel, submitLabel = "Добавить", fixedMealType }: EntryFormProps) {
   const [name, setName] = useState(initial?.name ?? "");
   const [mealType, setMealType] = useState<MealType>(initial?.meal_type ?? "lunch");
   const [grams, setGrams] = useState(initial?.grams?.toString() ?? "");
@@ -47,7 +48,7 @@ export function EntryForm({ initial, onSubmit, onCancel, submitLabel = "Доба
 
     const parsed = {
       name: name.trim(),
-      meal_type: mealType,
+      meal_type: fixedMealType ?? mealType,
       grams: Number(grams),
       calories: Number(calories),
       protein_g: Number(proteinG),
@@ -82,6 +83,7 @@ export function EntryForm({ initial, onSubmit, onCancel, submitLabel = "Доба
       </div>
 
       <div className="grid grid-cols-2 gap-3">
+        {!fixedMealType && (
         <div>
           <label className={labelClass}>Приём пищи</label>
           <select className={inputClass} value={mealType} onChange={(e) => setMealType(e.target.value as MealType)}>
@@ -92,6 +94,7 @@ export function EntryForm({ initial, onSubmit, onCancel, submitLabel = "Доба
             ))}
           </select>
         </div>
+        )}
         <div>
           <label className={labelClass}>Вес порции, г</label>
           <input className={inputClass} value={grams} onChange={(e) => setGrams(e.target.value)} />
