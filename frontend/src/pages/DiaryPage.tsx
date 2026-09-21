@@ -54,7 +54,7 @@ export function DiaryPage() {
         </div>
       )}
 
-      <AddEntryPanel title="Записи за день" date={date} loggedAt={`${date}T12:00:00`}>
+      <AddEntryPanel title="Записи за день" date={date} loggedAt={date === todayStr() ? undefined : `${date}T12:00:00`}>
         {summary && <EntryList entries={summary.entries} onDelete={(id) => deleteMutation.mutate(id)} />}
       </AddEntryPanel>
     </div>
