@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as usersApi from "../lib/api/users";
 import { ProfileForm } from "../components/ProfileForm";
 import { useAuth } from "../context/AuthContext";
+import { LogOutIcon } from "../components/icons";
 
 export function ProfilePage() {
   const queryClient = useQueryClient();
@@ -21,23 +22,28 @@ export function ProfilePage() {
     },
   });
 
-  if (isLoading || !profile) return <p className="text-neutral-500">Загрузка...</p>;
+  if (isLoading || !profile) return <p className="text-ink-2">Загрузка...</p>;
 
   return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-xl font-semibold mb-6">Профиль</h1>
-      {saved && <p className="text-sm text-brand-700 bg-brand-50 rounded-lg px-3 py-2 mb-4">Сохранено</p>}
-      <ProfileForm initial={profile} onSubmit={(payload) => mutation.mutateAsync(payload)} submitLabel="Сохранить"
-        extraAction={
-          <button
-            type="button"
-            onClick={logout}
-            className="text-sm text-neutral-500 hover:text-red-600 border border-neutral-300 hover:border-red-300 rounded-lg px-4 py-2"
-          >
-            Выйти из аккаунта
-          </button>
-        }
-      />
+    <div className="max-w-2xl space-y-9">
+      <h1 className="text-[40px] leading-tight font-bold">Профиль</h1>
+      <div className="card">
+        {saved && (
+          <p className="mb-6 bg-surface-2 border-l-[3px] border-protein rounded-xl px-5 py-3 text-ink-2" role="status">
+            Сохранено
+          </p>
+        )}
+        <ProfileForm
+          initial={profile}
+          onSubmit={(payload) => mutation.mutateAsync(payload)}
+          submitLabel="Сохранить"
+          extraAction={
+            <button type="button" onClick={logout} className="btn btn-secondary">
+              <LogOutIcon /> Выйти из аккаунта
+            </button>
+          }
+        />
+      </div>
     </div>
   );
 }

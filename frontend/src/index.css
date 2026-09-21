@@ -1,13 +1,69 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #f0fdf4;
-  --color-brand-100: #dcfce7;
-  --color-brand-500: #22c55e;
-  --color-brand-600: #16a34a;
-  --color-brand-700: #15803d;
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-bg: #0c0c0f;
+  --color-surface: #151519;
+  --color-surface-2: #1b1b20;
+  --color-line: #232329;
+  --color-line-soft: #202026;
+  --color-ink: #ededf0;
+  --color-ink-2: #6b6b75;
+  --color-ink-3: #54545c;
+  --color-cal: #4dffd1;
+  --color-protein: #c8ff4d;
+  --color-fat: #ff9a4d;
+  --color-carbs: #b79cff;
+  --color-danger: #ff6b6b;
+
+  --shadow-glow-cal: 0 0 14px rgb(77 255 209 / 0.3);
+  --shadow-glow-protein: 0 0 12px rgb(200 255 77 / 0.35);
+  --shadow-glow-fat: 0 0 12px rgb(255 154 77 / 0.35);
+  --shadow-glow-carbs: 0 0 12px rgb(183 156 255 / 0.35);
+  --shadow-glow-btn: 0 0 20px rgb(200 255 77 / 0.3);
+  --shadow-glow-btn-hover: 0 0 26px rgb(200 255 77 / 0.45);
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
-  @apply bg-neutral-50 text-neutral-900;
+  @apply bg-bg text-ink font-sans antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-protein);
+  outline-offset: 2px;
+}
+
+@layer components {
+  .card {
+    @apply bg-surface border border-line rounded-[18px] p-6 sm:p-10;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 min-h-11 px-[18px] py-[11px] rounded-xl text-[15px] font-medium border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-surface-2 border-line text-ink hover:border-ink-3;
+  }
+
+  .btn-primary {
+    @apply bg-protein border-protein text-bg font-semibold shadow-glow-btn hover:shadow-glow-btn-hover;
+  }
+
+  .btn-ghost {
+    @apply min-h-11 px-3 text-sm text-ink-3 hover:text-ink-2 transition-colors cursor-pointer;
+  }
+
+  .input {
+    @apply w-full min-h-11 bg-surface-2 border border-line rounded-xl px-3.5 py-2.5 text-ink placeholder:text-ink-3;
+  }
+
+  .label {
+    @apply block text-sm text-ink-2 mb-1.5;
+  }
 }

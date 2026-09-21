@@ -3,9 +3,9 @@ import type { MealEntryCreatePayload, MealType, RecognizedFoodItem } from "../ty
 import { EntryForm } from "./EntryForm";
 
 const CONFIDENCE_LABELS: Record<string, { label: string; className: string }> = {
-  high: { label: "высокая уверенность", className: "bg-brand-50 text-brand-700" },
-  medium: { label: "средняя уверенность", className: "bg-amber-50 text-amber-700" },
-  low: { label: "низкая уверенность — проверьте вручную", className: "bg-red-50 text-red-700" },
+  high: { label: "высокая уверенность", className: "text-ink-2 border-line" },
+  medium: { label: "средняя уверенность", className: "text-ink-2 border-line" },
+  low: { label: "низкая уверенность — проверьте вручную", className: "text-ink border-ink-3" },
 };
 
 interface RecognizedItemCardProps {
@@ -21,17 +21,17 @@ export function RecognizedItemCard({ item, photoUrl, onAdd, mealType }: Recogniz
 
   if (added) {
     return (
-      <div className="bg-brand-50 border border-brand-200 rounded-xl p-4 text-sm text-brand-700">
+      <div className="bg-surface-2 border-l-[3px] border-protein rounded-xl px-5 py-4 text-ink-2">
         «{item.name}» добавлено в дневник
       </div>
     );
   }
 
   return (
-    <div className="border border-neutral-200 rounded-xl p-4">
-      <div className="flex items-center justify-between mb-3">
-        <p className="font-medium">{item.name}</p>
-        <span className={`text-xs px-2 py-0.5 rounded-full ${confidence.className}`}>{confidence.label}</span>
+    <div className="bg-surface-2 border border-line rounded-xl p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <p className="font-semibold">{item.name}</p>
+        <span className={`text-xs px-2.5 py-1 rounded-lg border ${confidence.className}`}>{confidence.label}</span>
       </div>
       <EntryForm
         initial={{

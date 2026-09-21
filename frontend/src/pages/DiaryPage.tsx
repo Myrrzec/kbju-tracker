@@ -21,36 +21,30 @@ export function DiaryPage() {
 
   const summary = summaryQuery.data;
 
+  const stats = summary
+    ? [
+        { value: summary.total_calories, label: "ккал", color: "text-cal" },
+        { value: summary.total_protein_g, label: "белки, г", color: "text-protein" },
+        { value: summary.total_fat_g, label: "жиры, г", color: "text-fat" },
+        { value: summary.total_carbs_g, label: "углеводы, г", color: "text-carbs" },
+      ]
+    : [];
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Дневник</h1>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="border border-neutral-300 rounded-lg px-3 py-1.5 text-sm"
-        />
+    <div className="space-y-9">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <h1 className="text-[40px] leading-tight font-bold">Дневник</h1>
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input !w-auto" />
       </div>
 
       {summary && (
-        <div className="grid grid-cols-4 gap-3 text-center">
-          <div className="bg-white border border-neutral-200 rounded-xl py-3">
-            <p className="text-lg font-semibold">{Math.round(summary.total_calories)}</p>
-            <p className="text-xs text-neutral-500">ккал</p>
-          </div>
-          <div className="bg-white border border-neutral-200 rounded-xl py-3">
-            <p className="text-lg font-semibold">{Math.round(summary.total_protein_g)}</p>
-            <p className="text-xs text-neutral-500">белки, г</p>
-          </div>
-          <div className="bg-white border border-neutral-200 rounded-xl py-3">
-            <p className="text-lg font-semibold">{Math.round(summary.total_fat_g)}</p>
-            <p className="text-xs text-neutral-500">жиры, г</p>
-          </div>
-          <div className="bg-white border border-neutral-200 rounded-xl py-3">
-            <p className="text-lg font-semibold">{Math.round(summary.total_carbs_g)}</p>
-            <p className="text-xs text-neutral-500">углеводы, г</p>
-          </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {stats.map((stat) => (
+            <div key={stat.label} className="bg-surface border border-line rounded-[18px] py-5 px-6">
+              <p className={`text-3xl font-bold ${stat.color}`}>{Math.round(stat.value)}</p>
+              <p className="text-[13px] text-ink-2 mt-1">{stat.label}</p>
+            </div>
+          ))}
         </div>
       )}
 

@@ -4,6 +4,7 @@ import * as recognitionApi from "../lib/api/recognition";
 import { ApiError } from "../lib/apiClient";
 import type { MealEntryCreatePayload, MealType } from "../types";
 import { RecognizedItemCard } from "./RecognizedItemCard";
+import { CameraIcon } from "./icons";
 
 const MEAL_LABELS: Record<MealType, string> = {
   breakfast: "Завтрак",
@@ -44,32 +45,37 @@ export function PhotoRecognizer({ onAdd, onClose }: PhotoRecognizerProps) {
   const result = recognizeMutation.data;
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-neutral-500">
+    <div className="space-y-5">
+      <p className="text-ink-2">
         Загрузите фото блюда — ИИ оценит состав и КБЖУ. Перед добавлением можно поправить граммовку и цифры.
       </p>
 
-      <input type="file" accept="image/*" onChange={handleFileChange} className="text-sm" />
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="block w-full text-sm text-ink-2 file:mr-4 file:min-h-11 file:cursor-pointer file:rounded-xl file:border file:border-line file:bg-surface-2 file:px-[18px] file:text-ink hover:file:border-ink-3"
+      />
 
       {previewUrl && (
-        <img src={previewUrl} alt="Предпросмотр фото" className="max-h-64 rounded-xl border border-neutral-200" />
+        <img src={previewUrl} alt="Предпросмотр фото" className="max-h-64 rounded-xl border border-line" />
       )}
 
       <div className="flex items-center gap-3">
         <button
           onClick={() => file && recognizeMutation.mutate(file)}
           disabled={!file || recognizeMutation.isPending}
-          className="bg-brand-600 hover:bg-brand-700 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
+          className="btn btn-primary"
         >
-          {recognizeMutation.isPending ? "Анализируем..." : "Распознать"}
+          <CameraIcon /> {recognizeMutation.isPending ? "Анализируем..." : "Распознать"}
         </button>
-        <button onClick={onClose} className="text-sm text-neutral-500 hover:text-neutral-700">
+        <button onClick={onClose} className="btn-ghost">
           Закрыть
         </button>
       </div>
 
       {recognizeMutation.isError && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-danger">
           {recognizeMutation.error instanceof ApiError
             ? recognizeMutation.error.message
             : "Не удалось распознать фото"}
@@ -80,11 +86,11 @@ export function PhotoRecognizer({ onAdd, onClose }: PhotoRecognizerProps) {
         <div className="space-y-3">
           {result.items.length > 0 && (
             <div className="flex items-center gap-3">
-              <label className="text-sm text-neutral-600">Приём пищи для всех блюд:</label>
+              <label className="text-sm text-ink-2">Приём пищи для всех блюд:</label>
               <select
                 value={mealType}
                 onChange={(e) => setMealType(e.target.value as MealType)}
-                className="border border-neutral-300 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-brand-500"
+                className="input !w-auto"
               >
                 {Object.entries(MEAL_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -95,10 +101,10 @@ export function PhotoRecognizer({ onAdd, onClose }: PhotoRecognizerProps) {
             </div>
           )}
           {result.notes && (
-            <p className="text-sm text-neutral-600 bg-neutral-100 rounded-lg px-3 py-2">{result.notes}</p>
+            <p className="text-sm text-ink-2 bg-surface-2 border border-line rounded-xl px-4 py-3">{result.notes}</p>
           )}
           {result.items.length === 0 ? (
-            <p className="text-sm text-neutral-400">Еда на фото не распознана.</p>
+            <p className="text-ink-2">Еда на фото не распознана.</p>
           ) : (
             result.items.map((item, index) => (
               <RecognizedItemCard

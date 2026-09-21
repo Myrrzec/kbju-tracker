@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as recommendationsApi from "../lib/api/recommendations";
 import { ApiError } from "../lib/apiClient";
+import { SparklesIcon } from "../components/icons";
 
 export function RecommendationsPage() {
   const queryClient = useQueryClient();
@@ -18,34 +19,28 @@ export function RecommendationsPage() {
   const recommendation = generateMutation.data ?? latestQuery.data;
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Рекомендации</h1>
-        <button
-          onClick={() => generateMutation.mutate()}
-          disabled={generateMutation.isPending}
-          className="bg-brand-600 hover:bg-brand-700 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
-        >
-          {generateMutation.isPending ? "Генерируем..." : "Обновить рекомендацию"}
+    <div className="max-w-3xl space-y-9">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <h1 className="text-[40px] leading-tight font-bold">Рекомендации</h1>
+        <button onClick={() => generateMutation.mutate()} disabled={generateMutation.isPending} className="btn btn-primary">
+          <SparklesIcon /> {generateMutation.isPending ? "Генерируем..." : "Обновить рекомендацию"}
         </button>
       </div>
 
       {generateMutation.isError && (
-        <p className="text-sm text-red-600">
+        <p className="text-danger">
           {generateMutation.error instanceof ApiError ? generateMutation.error.message : "Не удалось получить рекомендацию"}
         </p>
       )}
 
       {!recommendation && !latestQuery.isLoading && (
-        <p className="text-sm text-neutral-400">
-          Рекомендаций пока нет — нажмите «Обновить рекомендацию», чтобы получить первую.
-        </p>
+        <p className="text-ink-2">Рекомендаций пока нет — нажмите «Обновить рекомендацию», чтобы получить первую.</p>
       )}
 
       {recommendation && (
-        <div className="bg-white border border-neutral-200 rounded-2xl p-5">
-          <p className="whitespace-pre-line text-neutral-800 leading-relaxed">{recommendation.content}</p>
-          <p className="text-xs text-neutral-400 mt-4">
+        <div className="card">
+          <p className="whitespace-pre-line leading-relaxed">{recommendation.content}</p>
+          <p className="text-[13px] text-ink-2 mt-6">
             За период: {recommendation.period_days} дн. · {new Date(recommendation.created_at).toLocaleString("ru-RU")}
           </p>
         </div>

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { ApiError } from "../lib/apiClient";
+import { Logo } from "../components/Logo";
 
 export function RegisterPage() {
   const { register } = useAuth();
@@ -32,42 +33,41 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm">
-        <h1 className="text-xl font-semibold text-brand-700 mb-6">Регистрация</h1>
+    <div className="min-h-screen flex flex-col items-center justify-center px-5 gap-8">
+      <Logo />
+      <form onSubmit={handleSubmit} className="card w-full max-w-md !p-8">
+        <h1 className="text-[28px] font-bold mb-8">Регистрация</h1>
 
-        <label className="block text-sm text-neutral-600 mb-1">Email</label>
+        <label className="label" htmlFor="email">Email</label>
         <input
+          id="email"
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-neutral-300 rounded-lg px-3 py-2 mb-4 outline-none focus:border-brand-500"
+          className="input mb-5"
         />
 
-        <label className="block text-sm text-neutral-600 mb-1">Пароль (минимум 8 символов)</label>
+        <label className="label" htmlFor="password">Пароль (минимум 8 символов)</label>
         <input
+          id="password"
           type="password"
           required
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-neutral-300 rounded-lg px-3 py-2 mb-4 outline-none focus:border-brand-500"
+          className="input mb-6"
         />
 
-        {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+        {error && <p className="text-danger mb-5">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-brand-600 hover:bg-brand-700 text-white rounded-lg py-2 font-medium disabled:opacity-50"
-        >
+        <button type="submit" disabled={loading} className="btn btn-primary w-full">
           {loading ? "Создаём аккаунт..." : "Зарегистрироваться"}
         </button>
 
-        <p className="text-sm text-neutral-500 mt-4 text-center">
+        <p className="text-ink-2 mt-6 text-center">
           Уже есть аккаунт?{" "}
-          <Link to="/login" className="text-brand-600 hover:underline">
+          <Link to="/login" className="text-protein underline underline-offset-4">
             Войти
           </Link>
         </p>

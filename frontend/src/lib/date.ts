@@ -8,3 +8,8 @@ export function toDateInputValue(date: Date): string {
 export function todayStr(): string {
   return toDateInputValue(new Date());
 }
+
+export function formatDateRu(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  return `${d}.${m}.${y}`;
+}

@@ -4,6 +4,7 @@ import * as diaryApi from "../lib/api/diary";
 import type { MealEntryCreatePayload } from "../types";
 import { EntryForm } from "./EntryForm";
 import { PhotoRecognizer } from "./PhotoRecognizer";
+import { CameraIcon, PencilIcon } from "./icons";
 
 type Mode = "manual" | "photo" | null;
 
@@ -25,29 +26,23 @@ export function AddEntryPanel({ title, date, loggedAt, children }: AddEntryPanel
   });
 
   return (
-    <div className="bg-white border border-neutral-200 rounded-2xl p-5">
-      <div className="flex items-center justify-between gap-3 mb-2">
-        <h2 className="font-medium">{title}</h2>
+    <div className="card">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <h2 className="text-[22px] font-bold">{title}</h2>
         {mode === null && (
           <div className="flex gap-2">
-            <button
-              onClick={() => setMode("manual")}
-              className="text-sm border border-neutral-300 hover:border-brand-500 hover:text-brand-700 rounded-full px-3 py-1.5"
-            >
-              ✍️ Вручную
+            <button onClick={() => setMode("manual")} className="btn btn-secondary">
+              <PencilIcon /> Вручную
             </button>
-            <button
-              onClick={() => setMode("photo")}
-              className="text-sm bg-brand-600 hover:bg-brand-700 text-white rounded-full px-3 py-1.5"
-            >
-              📷 По фото (ИИ)
+            <button onClick={() => setMode("photo")} className="btn btn-primary">
+              <CameraIcon /> По фото (ИИ)
             </button>
           </div>
         )}
       </div>
 
       {mode === "manual" && (
-        <div className="mb-4 pb-4 border-b border-neutral-100">
+        <div className="mb-8 pb-8 border-b border-line-soft">
           <EntryForm
             onSubmit={async (payload) => {
               await createMutation.mutateAsync(payload);
@@ -59,7 +54,7 @@ export function AddEntryPanel({ title, date, loggedAt, children }: AddEntryPanel
       )}
 
       {mode === "photo" && (
-        <div className="mb-4 pb-4 border-b border-neutral-100">
+        <div className="mb-8 pb-8 border-b border-line-soft">
           <PhotoRecognizer onAdd={(payload) => createMutation.mutateAsync(payload)} onClose={() => setMode(null)} />
         </div>
       )}

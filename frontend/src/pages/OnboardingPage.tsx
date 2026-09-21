@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as usersApi from "../lib/api/users";
 import { ProfileForm } from "../components/ProfileForm";
+import { Logo } from "../components/Logo";
 
 export function OnboardingPage() {
   const navigate = useNavigate();
@@ -18,15 +19,26 @@ export function OnboardingPage() {
     },
   });
 
-  if (isLoading || !profile) return <p className="text-neutral-500">Загрузка...</p>;
-
   return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-xl font-semibold mb-1">Расскажите о себе</h1>
-      <p className="text-sm text-neutral-500 mb-6">
-        Это нужно, чтобы рассчитать вашу суточную норму калорий, белков, жиров и углеводов.
-      </p>
-      <ProfileForm initial={profile} onSubmit={(payload) => mutation.mutateAsync(payload)} submitLabel="Сохранить и продолжить" />
+    <div className="max-w-2xl mx-auto px-5 sm:px-0 py-10 sm:py-14 space-y-9">
+      <Logo />
+      <div>
+        <h1 className="text-[40px] leading-tight font-bold">Расскажите о себе</h1>
+        <p className="text-ink-2 mt-2">
+          Это нужно, чтобы рассчитать вашу суточную норму калорий, белков, жиров и углеводов.
+        </p>
+      </div>
+      <div className="card">
+        {isLoading || !profile ? (
+          <p className="text-ink-2">Загрузка...</p>
+        ) : (
+          <ProfileForm
+            initial={profile}
+            onSubmit={(payload) => mutation.mutateAsync(payload)}
+            submitLabel="Сохранить и продолжить"
+          />
+        )}
+      </div>
     </div>
   );
 }

@@ -12,32 +12,35 @@ function formatTime(date: Date): string {
 
 export function EntryList({ entries, onDelete }: EntryListProps) {
   if (entries.length === 0) {
-    return <p className="text-sm text-neutral-400 py-4">Записей пока нет</p>;
+    return <p className="text-ink-2 py-6">Записей пока нет</p>;
   }
 
   const meals = groupIntoMeals(entries);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {meals.map((meal) => (
-        <section key={meal.key} className="border border-neutral-200 rounded-xl overflow-hidden">
-          <header className="bg-neutral-50 px-4 py-2.5 flex items-center justify-between gap-3">
+        <section key={meal.key}>
+          <header className="bg-surface-2 rounded-xl border-l-[3px] border-protein px-5 py-3.5 flex items-center justify-between gap-4">
             <div>
-              <h3 className="font-medium">{meal.label}</h3>
-              <p className="text-xs text-neutral-500">{formatTime(meal.startedAt)}</p>
+              <h3 className="font-semibold text-lg leading-tight">{meal.label}</h3>
+              <p className="text-[13px] text-ink-2">{formatTime(meal.startedAt)}</p>
             </div>
-            <p className="text-xs text-neutral-600 text-right">
-              <span className="font-medium text-neutral-900">{Math.round(meal.totals.calories)} ккал</span>
-              <br />Б {Math.round(meal.totals.protein_g)} · Ж {Math.round(meal.totals.fat_g)} · У{" "}
+            <p className="text-[13px] text-ink-2 text-right">
+              <span className="block text-base font-semibold text-ink">{Math.round(meal.totals.calories)} ккал</span>
+              Б {Math.round(meal.totals.protein_g)} · Ж {Math.round(meal.totals.fat_g)} · У{" "}
               {Math.round(meal.totals.carbs_g)}
             </p>
           </header>
-          <ul className="divide-y divide-neutral-100 px-4">
+          <ul>
             {meal.entries.map((entry) => (
-              <li key={entry.id} className="py-2.5 flex items-center justify-between gap-3">
+              <li
+                key={entry.id}
+                className="py-4 border-b border-line-soft last:border-b-0 flex items-center justify-between gap-4"
+              >
                 <div className="min-w-0">
-                  <p className="truncate">{entry.name}</p>
-                  <p className="text-xs text-neutral-500">
+                  <p className="truncate text-[15px]">{entry.name}</p>
+                  <p className="text-[13px] text-ink-2">
                     {entry.grams} г · {Math.round(entry.calories)} ккал · Б {Math.round(entry.protein_g)} Ж{" "}
                     {Math.round(entry.fat_g)} У {Math.round(entry.carbs_g)}
                     {entry.source === "photo_ai" && " · по фото"}
@@ -45,8 +48,8 @@ export function EntryList({ entries, onDelete }: EntryListProps) {
                 </div>
                 <button
                   onClick={() => onDelete(entry.id)}
-                  className="text-neutral-300 hover:text-red-500 text-sm shrink-0"
-                  aria-label="Удалить запись"
+                  className="btn-ghost shrink-0"
+                  aria-label={`Удалить запись «${entry.name}»`}
                 >
                   Удалить
                 </button>

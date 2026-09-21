@@ -39,8 +39,8 @@ export function EntryForm({ initial, onSubmit, onCancel, submitLabel = "Доба
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const inputClass = "w-full border border-neutral-300 rounded-lg px-3 py-2 outline-none focus:border-brand-500";
-  const labelClass = "block text-sm text-neutral-600 mb-1";
+  const inputClass = "input";
+  const labelClass = "label";
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -76,7 +76,7 @@ export function EntryForm({ initial, onSubmit, onCancel, submitLabel = "Доба
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className={labelClass}>Название</label>
         <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} />
@@ -101,37 +101,33 @@ export function EntryForm({ initial, onSubmit, onCancel, submitLabel = "Доба
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div>
-          <label className={labelClass}>Ккал</label>
+          <label className={`${labelClass} !text-cal`}>Ккал</label>
           <input className={inputClass} value={calories} onChange={(e) => setCalories(e.target.value)} />
         </div>
         <div>
-          <label className={labelClass}>Белки</label>
+          <label className={`${labelClass} !text-protein`}>Белки</label>
           <input className={inputClass} value={proteinG} onChange={(e) => setProteinG(e.target.value)} />
         </div>
         <div>
-          <label className={labelClass}>Жиры</label>
+          <label className={`${labelClass} !text-fat`}>Жиры</label>
           <input className={inputClass} value={fatG} onChange={(e) => setFatG(e.target.value)} />
         </div>
         <div>
-          <label className={labelClass}>Углеводы</label>
+          <label className={`${labelClass} !text-carbs`}>Углеводы</label>
           <input className={inputClass} value={carbsG} onChange={(e) => setCarbsG(e.target.value)} />
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       <div className="flex gap-2">
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-brand-600 hover:bg-brand-700 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
-        >
+        <button type="submit" disabled={loading} className="btn btn-primary">
           {loading ? "Сохраняем..." : submitLabel}
         </button>
         {onCancel && (
-          <button type="button" onClick={onCancel} className="text-sm text-neutral-500 hover:text-neutral-700 px-2">
+          <button type="button" onClick={onCancel} className="btn-ghost">
             Отмена
           </button>
         )}
