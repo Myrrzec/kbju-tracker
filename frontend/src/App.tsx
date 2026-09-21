@@ -6,7 +6,6 @@ import { RegisterPage } from "./pages/RegisterPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DiaryPage } from "./pages/DiaryPage";
-import { RecognizePage } from "./pages/RecognizePage";
 import { RecommendationsPage } from "./pages/RecommendationsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 
@@ -22,7 +21,6 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/diary" element={<DiaryPage />} />
-          <Route path="/recognize" element={<RecognizePage />} />
           <Route path="/recommendations" element={<RecommendationsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>

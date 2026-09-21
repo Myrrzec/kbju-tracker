@@ -1,17 +1,15 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as usersApi from "../lib/api/users";
 import * as diaryApi from "../lib/api/diary";
 import { todayStr } from "../lib/date";
 import { MacroBar } from "../components/MacroBar";
-import { EntryForm } from "../components/EntryForm";
+import { AddEntryPanel } from "../components/AddEntryPanel";
 import { EntryList } from "../components/EntryList";
 import { ApiError } from "../lib/apiClient";
 
 export function DashboardPage() {
   const queryClient = useQueryClient();
-  const [showAddForm, setShowAddForm] = useState(false);
   const today = todayStr();
 
   const targetsQuery = useQuery({
@@ -23,14 +21,6 @@ export function DashboardPage() {
   const summaryQuery = useQuery({
     queryKey: ["diary-summary", today],
     queryFn: () => diaryApi.getDailySummary(today),
-  });
-
-  const createMutation = useMutation({
-    mutationFn: diaryApi.createEntry,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["diary-summary", today] });
-      setShowAddForm(false);
-    },
   });
 
   const deleteMutation = useMutation({
@@ -68,24 +58,9 @@ export function DashboardPage() {
         </div>
       )}
 
-      <div className="bg-white border border-neutral-200 rounded-2xl p-5">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="font-medium">Приёмы пищи</h2>
-          {!showAddForm && (
-            <button onClick={() => setShowAddForm(true)} className="text-sm text-brand-600 hover:underline">
-              + Добавить запись
-            </button>
-          )}
-        </div>
-
-        {showAddForm && (
-          <div className="mb-4 pb-4 border-b border-neutral-100">
-            <EntryForm onSubmit={(payload) => createMutation.mutateAsync(payload)} onCancel={() => setShowAddForm(false)} />
-          </div>
-        )}
-
+      <AddEntryPanel title="Приёмы пищи" date={today}>
         {summary && <EntryList entries={summary.entries} onDelete={(id) => deleteMutation.mutate(id)} />}
-      </div>
+      </AddEntryPanel>
     </div>
   );
 }

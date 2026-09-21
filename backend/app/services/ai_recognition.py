@@ -1,7 +1,12 @@
 import base64
+import logging
 from typing import Optional
 
 import anthropic
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("kbju.recognition")
+logger.setLevel(logging.INFO)
 
 from app.config import get_settings
 from app.schemas.recognition import RecognizedFoodItem
@@ -64,11 +69,14 @@ def analyze_food_photo(image_bytes: bytes, extension: str) -> tuple[list[Recogni
     except anthropic.APIError as exc:
         raise RecognitionError(f"Ошибка обращения к AI: {exc}") from exc
 
+    logger.info("stop_reason=%s content_types=%s", response.stop_reason, [b.type for b in response.content])
+
     tool_use_block = next((block for block in response.content if block.type == "tool_use"), None)
     if tool_use_block is None:
         raise RecognitionError("AI не вернул структурированный результат")
 
     payload = tool_use_block.input
+    logger.info("raw payload from Claude: %s", payload)
     raw_items = payload.get("items", [])
     # Claude usually returns a list of objects as specified in the tool schema, but
     # occasionally restructures it as an object keyed by item name/index instead —
