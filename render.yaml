@@ -1,0 +1,39 @@
+databases:
+  - name: kbju-tracker-db
+    plan: free
+    databaseName: kbju
+    user: kbju
+
+services:
+  - type: web
+    name: kbju-tracker-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.6
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kbju-tracker-db
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "30"
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: "30"
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-5
+      - key: STORAGE_DIR
+        value: ./storage/photos
+      - key: CORS_ORIGINS
+        value: http://localhost:3000
+      - key: CORS_ORIGIN_REGEX
+        value: ^https://([a-z0-9-]+\.)?kbju-tracker\.pages\.dev$
