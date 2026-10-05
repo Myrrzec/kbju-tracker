@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,6 +19,18 @@ class Settings(BaseSettings):
     storage_dir: str = "./storage/photos"
     cors_origins: str = "http://localhost:3000"
     cors_origin_regex: str = ""
+
+    # Лимиты на запросы к Claude: защищают API-ключ от расхода чужими аккаунтами.
+    ai_hourly_limit_per_user: int = 20
+    ai_daily_limit_per_user: int = 60
+    ai_daily_limit_total: int = 500
+
+    @field_validator("jwt_secret_key")
+    @classmethod
+    def _strong_jwt_secret(cls, value: str) -> str:
+        if len(value) < 32 or value.startswith("change-me"):
+            raise ValueError("JWT_SECRET_KEY должен быть случайной строкой не короче 32 символов")
+        return value
 
     @property
     def cors_origins_list(self) -> list[str]:

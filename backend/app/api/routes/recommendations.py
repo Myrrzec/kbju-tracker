@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, require_ai_quota
 from app.core.timezones import resolve_tz, tz_key
 from app.database import get_db
 from app.models.recommendation import Recommendation
@@ -35,7 +35,7 @@ def create_recommendation(
     period_days: int = Query(default=7, ge=1, le=30),
     tz: str = "UTC",
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_ai_quota),
 ) -> RecommendationOut:
     try:
         targets = calculate_daily_targets(current_user.profile)

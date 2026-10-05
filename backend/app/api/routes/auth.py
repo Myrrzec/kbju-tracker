@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
+from app.core.rate_limit import RateLimiter, client_ip
 from app.core.security import (
     InvalidTokenError,
     create_access_token,
@@ -16,9 +17,16 @@ from app.schemas.auth import LoginRequest, RefreshRequest, RegisterRequest, Toke
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+_TOO_MANY = "Слишком много попыток, попробуйте позже"
+_register_by_ip = RateLimiter(10, 3600, _TOO_MANY)
+_login_by_ip = RateLimiter(30, 900, _TOO_MANY)
+_login_by_email = RateLimiter(10, 900, _TOO_MANY)
+_refresh_by_ip = RateLimiter(60, 900, _TOO_MANY)
+
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenResponse:
+def register(payload: RegisterRequest, request: Request, db: Session = Depends(get_db)) -> TokenResponse:
+    _register_by_ip.hit(client_ip(request))
     existing = db.query(User).filter(User.email == payload.email).first()
     if existing is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email уже зарегистрирован")
@@ -38,7 +46,9 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenRe
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
+def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)) -> TokenResponse:
+    _login_by_ip.hit(client_ip(request))
+    _login_by_email.hit(payload.email.lower())
     user = db.query(User).filter(User.email == payload.email).first()
     if user is None or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный email или пароль")
@@ -50,7 +60,8 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse
 
 
 @router.post("/refresh", response_model=TokenResponse)
-def refresh(payload: RefreshRequest, db: Session = Depends(get_db)) -> TokenResponse:
+def refresh(payload: RefreshRequest, request: Request, db: Session = Depends(get_db)) -> TokenResponse:
+    _refresh_by_ip.hit(client_ip(request))
     try:
         user_id = decode_token(payload.refresh_token, expected_type="refresh")
     except InvalidTokenError as exc:
