@@ -1,124 +1,45 @@
-# KBJU Tracker
+# Macros Tracker
 
-Веб-приложение для учёта КБЖУ с распознаванием еды по фото и AI-рекомендациями.
-Архитектура и план — в [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), объяснение
-AI-промптов — в [`docs/PROMPTS.md`](docs/PROMPTS.md).
+Track calories, protein, fat and carbs. Photograph a meal and the AI estimates what's on the plate; you correct the numbers and save them to a daily diary.
 
-## Запуск бэкенда локально
+**Live demo: [kbju-tracker.pages.dev](https://kbju-tracker.pages.dev)**
+Hosted on free tiers, so the first request after a pause can take up to a minute while the server wakes up.
 
-1. Поднять базу данных — через [Postgres.app](https://postgresapp.com) (см. `createuser`/`createdb`
-   в документации приложения) или через Docker:
+## What it does
 
-   ```bash
-   docker compose up -d db
-   ```
+- **Personal targets.** Daily calories, protein, fat and carbs are calculated from sex, age, height, weight, activity level and goal (Mifflin-St Jeor), or set by hand.
+- **Photo logging.** Upload a meal photo and Claude Vision returns each dish with an estimated portion, calories and macros, plus a confidence level and a note. Everything is editable before it is saved.
+- **Diary.** Entries are grouped into meals with times (Lunch 1, Lunch 2), can be edited inline, and recent dishes can be re-added in one tap.
+- **Dashboard.** A calorie ring and macro bars show the day against your targets.
+- **AI advice.** Short, concrete suggestions based on the last 7 days of the diary.
 
-2. Настроить окружение:
+## Built with
 
-   ```bash
-   cd backend
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   cp .env.example .env
-   ```
+| Layer | Tools |
+| --- | --- |
+| Frontend | React, TypeScript, Vite, Tailwind CSS v4, TanStack Query, React Router |
+| Backend | Python, FastAPI, SQLAlchemy 2, Alembic, PostgreSQL |
+| Auth | JWT access and refresh tokens, bcrypt |
+| AI | Claude API: vision for photos, text for advice |
+| Hosting | Cloudflare Pages (frontend), Render (API and database) |
 
-   Открыть `.env` и вписать `ANTHROPIC_API_KEY` (нужен для распознавания фото и
-   рекомендаций) и сгенерировать `JWT_SECRET_KEY`, например:
+## How it works
 
-   ```bash
-   python3 -c "import secrets; print(secrets.token_hex(32))"
-   ```
+**Photo recognition.** The image is sent to Claude with a forced tool call, so the model must answer with a JSON object matching a fixed schema instead of free text. The prompt asks for a best-effort estimate marked as low confidence rather than a refusal when a photo is blurry or partly hidden, which is what makes it useful on real pictures.
 
-3. Применить миграции:
+**Day boundaries follow the user's time zone.** The client sends its zone with every summary request, so a meal logged at 00:30 lands on the right day.
 
-   ```bash
-   alembic upgrade head
-   ```
+**Nutrition is stored as a snapshot.** Each diary entry keeps the numbers it was saved with, so editing a dish later never rewrites history.
 
-4. Запустить сервер:
+**Friendly errors.** Raw API and AI errors are mapped to short messages, and the API client refreshes expired tokens and retries once.
 
-   ```bash
-   uvicorn app.main:app --reload
-   ```
-
-5. Открыть интерактивную документацию API: http://localhost:8000/docs
-
-## Запуск фронтенда локально
-
-Бэкенд должен быть уже запущен (см. выше) — фронтенд обращается к нему по `http://localhost:8000`.
-
-```bash
-cd frontend
-npm install
-cp .env.example .env
-npm run dev
-```
-
-Открыть http://localhost:3000 — первый экран попросит зарегистрироваться, затем
-заполнить профиль (для расчёта целевых КБЖУ), после чего откроется дашборд.
-
-## Деплой (бесплатный, живая демка)
-
-Три отдельных сервиса, в отличие от статического сайта: фронтенд, бэкенд, база данных.
-
-**Бэкенд + БД — Render**, через `render.yaml` (Blueprint) в корне репозитория —
-он сам создаёт и Postgres, и веб-сервис, и прописывает между ними `DATABASE_URL`.
-
-1. [dashboard.render.com](https://dashboard.render.com) → зарегистрироваться
-2. **New** → **Blueprint** → подключить репозиторий `kbju-tracker` на GitHub
-3. Render найдёт `render.yaml` и покажет план: Postgres `kbju-tracker-db` + веб-сервис `kbju-tracker-api`
-4. Единственное, что попросит ввести вручную — `ANTHROPIC_API_KEY` (по соображениям
-   безопасности такие секреты не должны лежать в `render.yaml`/репозитории)
-5. **Apply** — через несколько минут бэкенд будет на `https://kbju-tracker-api.onrender.com`
-
-**Фронтенд — Cloudflare Pages**, как и в pilates-проекте:
-
-1. Workers & Pages → Create → Pages → **Connect to Git** → репозиторий `kbju-tracker`
-2. **Root directory**: `frontend`
-3. **Build command**: `npm run build`, **Build output directory**: `dist`
-4. Save and Deploy
-
-Адрес backend уже зашит в [`frontend/.env.production`](frontend/.env.production) — Vite подхватывает
-этот файл автоматически при продакшн-сборке, отдельно ничего прописывать не нужно
-(если только Render не переименовал сервис из-за занятого имени — тогда поправить URL
-в этом файле и запушить).
-
-### Известные ограничения бесплатного тарифа
-
-- **Задержка первого запроса**: сервис на Render засыпает после 15 минут без
-  запросов, следующий запрос будит его — это занимает 30–50 секунд. Не баг.
-- **Бесплатная база Postgres на Render существует 90 дней**, потом Render просит
-  пересоздать её — учтено как факт, не как проблема кода.
-- **Хранилище фото временное**: файлы лежат на диске контейнера, который
-  пересоздаётся при каждом деплое/перезапуске — загруженные фото не переживут
-  передеплой. Для продакшена нужно S3-совместимое хранилище (см. `docs/ARCHITECTURE.md`).
-
-## Структура
+## Repository layout
 
 ```
-backend/app/
-  models/       # SQLAlchemy-модели (User, UserProfile, FoodItem, MealEntry, Recommendation)
-  schemas/      # Pydantic-схемы запросов/ответов
-  api/routes/   # FastAPI-роуты (auth, users, diary, recognition, recommendations)
-  services/     # Бизнес-логика: расчёт КБЖУ, хранилище фото, вызовы Claude
-  core/         # Хеширование паролей, JWT
-
-frontend/src/
-  types/        # TypeScript-типы, зеркалящие backend-схемы
-  lib/          # API-клиент (fetch + refresh токена), типизированные вызовы эндпоинтов
-  context/      # AuthContext — токены, login/register/logout
-  components/   # Переиспользуемые UI-блоки (формы, списки, прогресс-бары)
-  pages/        # Страницы: Login, Register, Onboarding, Dashboard, Diary, Recognize, Recommendations, Profile
+backend/    FastAPI app: models, schemas, routes, services (nutrition maths, Claude calls)
+frontend/   React app: pages, components, API client
+docs/       Architecture notes and the reasoning behind the AI prompts (in Russian)
+render.yaml Render blueprint for the API and database
 ```
 
-## Статус
-
-MVP полностью работает end-to-end: auth, профиль с расчётом целевых КБЖУ, дневник
-питания, распознавание фото через Claude Vision, генерация рекомендаций через Claude —
-и фронтенд на React, покрывающий весь этот путь. Проверено вживую в браузере
-(регистрация → онбординг → дашборд → дневник → профиль → рекомендации).
-
-Ещё не сделано — см. раздел "Роадмап" в [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md):
-продакшн-хранилище фото (S3-совместимое, сейчас временный диск на Render), наполнение
-справочника продуктов.
+More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/PROMPTS.md](docs/PROMPTS.md).
