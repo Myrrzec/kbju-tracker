@@ -13,6 +13,11 @@ class RecognizedFoodItem(BaseModel):
     carbs_g: float = Field(ge=0)
 
 
+class DemoRecognitionResult(BaseModel):
+    items: list[RecognizedFoodItem]
+    notes: Optional[str] = None
+
+
 class PhotoRecognitionResult(BaseModel):
     items: list[RecognizedFoodItem]
     notes: Optional[str] = None

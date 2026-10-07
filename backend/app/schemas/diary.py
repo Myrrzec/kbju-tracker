@@ -2,9 +2,10 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.diary import EntrySource, MealType
+from app.services.storage import is_valid_photo_url
 
 
 class MealEntryCreate(BaseModel):
@@ -19,6 +20,13 @@ class MealEntryCreate(BaseModel):
     photo_url: Optional[str] = None
     source: EntrySource = EntrySource.manual
     logged_at: Optional[datetime] = None  # по умолчанию — текущее время
+
+    @field_validator("photo_url")
+    @classmethod
+    def _photo_url_must_be_ours(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None and not is_valid_photo_url(value):
+            raise ValueError("Invalid photo URL")
+        return value
 
 
 class MealEntryUpdate(BaseModel):

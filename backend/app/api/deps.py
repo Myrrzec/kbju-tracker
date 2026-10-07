@@ -18,24 +18,24 @@ def get_current_user(
     db: Session = Depends(get_db),
 ) -> User:
     if credentials is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Не авторизован")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 
     try:
         user_id = decode_token(credentials.credentials, expected_type="access")
     except InvalidTokenError as exc:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Невалидный токен") from exc
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token") from exc
 
     user = db.get(User, user_id)
     if user is None or not user.is_active:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Пользователь не найден")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
     return user
 
 
 _settings = get_settings()
-_ai_hourly = RateLimiter(_settings.ai_hourly_limit_per_user, 3600, "Слишком много запросов к ИИ, попробуйте через час")
-_ai_daily = RateLimiter(_settings.ai_daily_limit_per_user, 86400, "Дневной лимит запросов к ИИ исчерпан, попробуйте завтра")
-_ai_total = RateLimiter(_settings.ai_daily_limit_total, 86400, "ИИ-функции временно недоступны, попробуйте позже")
+_ai_hourly = RateLimiter(_settings.ai_hourly_limit_per_user, 3600, "Too many AI requests, please try again in an hour")
+_ai_daily = RateLimiter(_settings.ai_daily_limit_per_user, 86400, "Daily AI request limit reached, please try again tomorrow")
+_ai_total = RateLimiter(_settings.ai_daily_limit_total, 86400, "AI features are temporarily unavailable, please try again later")
 
 
 def charge_ai_quota(user: User) -> None:

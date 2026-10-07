@@ -11,6 +11,7 @@ from app.database import get_db
 from app.models.diary import MealEntry
 from app.models.user import User
 from app.schemas.diary import DailySummary, MealEntryCreate, MealEntryOut, MealEntryUpdate
+from app.services.photos import delete_unreferenced_photos
 
 router = APIRouter(prefix="/diary", tags=["diary"])
 
@@ -61,7 +62,7 @@ def get_recent_entries(
 def _get_owned_entry(db: Session, entry_id: uuid.UUID, user: User) -> MealEntry:
     entry = db.get(MealEntry, entry_id)
     if entry is None or entry.user_id != user.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Запись не найдена")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found")
     return entry
 
 
@@ -96,8 +97,11 @@ def delete_entry(
     current_user: User = Depends(get_current_user),
 ) -> None:
     entry = _get_owned_entry(db, entry_id, current_user)
+    photo_url = entry.photo_url
     db.delete(entry)
     db.commit()
+    if photo_url:
+        delete_unreferenced_photos(db, [photo_url])
 
 
 @router.get("/summary", response_model=DailySummary)

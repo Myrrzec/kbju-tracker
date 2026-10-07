@@ -10,11 +10,11 @@ def friendly_ai_error(exc: Exception) -> str:
     logger.error("Anthropic API error: %r", exc)
 
     if isinstance(exc, anthropic.AuthenticationError):
-        return "ИИ недоступен: ключ Anthropic недействителен. Проверьте ANTHROPIC_API_KEY в backend/.env."
+        return "AI is unavailable: the Anthropic API key is invalid. Check ANTHROPIC_API_KEY in backend/.env."
     if isinstance(exc, anthropic.PermissionDeniedError):
-        return "ИИ недоступен: у ключа Anthropic нет доступа к этой модели."
+        return "AI is unavailable: the Anthropic key has no access to this model."
     if isinstance(exc, anthropic.RateLimitError):
-        return "Слишком много запросов к ИИ. Подождите минуту и попробуйте снова."
+        return "Too many AI requests. Wait a minute and try again."
     if isinstance(exc, anthropic.APIConnectionError):
-        return "Нет связи с сервисом ИИ. Проверьте интернет и попробуйте снова."
-    return "Не удалось получить ответ от ИИ. Попробуйте ещё раз."
+        return "Can't reach the AI service. Check the connection and try again."
+    return "Couldn't get a response from the AI. Please try again."

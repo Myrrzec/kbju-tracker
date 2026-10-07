@@ -67,7 +67,7 @@ def calculate_daily_targets(profile: UserProfile) -> DailyTargets:
         if value is None
     ]
     if missing:
-        raise IncompleteProfileError(f"Не заполнены поля профиля: {', '.join(missing)}")
+        raise IncompleteProfileError(f"Profile is incomplete, missing: {', '.join(missing)}")
 
     age = _age_years(profile.birth_date)
     sex_offset = 5 if profile.sex == Sex.male else -161

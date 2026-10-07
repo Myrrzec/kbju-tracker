@@ -7,11 +7,13 @@ Hosted on free tiers, so the first request after a pause can take up to a minute
 
 ## What it does
 
+- **Public demo.** Visitors can analyze one meal photo on the home page without an account. Nothing is stored, and per-network and daily limits protect the AI budget.
 - **Personal targets.** Daily calories, protein, fat and carbs are calculated from sex, age, height, weight, activity level and goal (Mifflin-St Jeor), or set by hand.
 - **Photo logging.** Upload a meal photo and Claude Vision returns each dish with an estimated portion, calories and macros, plus a confidence level and a note. Everything is editable before it is saved.
 - **Diary.** Entries are grouped into meals with times (Lunch 1, Lunch 2), can be edited inline, and recent dishes can be re-added in one tap.
 - **Dashboard.** A calorie ring and macro bars show the day against your targets.
 - **AI advice.** Short, concrete suggestions based on the last 7 days of the diary.
+- **Your data.** Export everything as JSON or delete the account, photos included, from the profile page. Privacy Policy and Terms of Service pages are built in.
 
 ## Built with
 

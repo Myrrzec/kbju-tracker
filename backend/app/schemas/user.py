@@ -5,6 +5,8 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.profile import ActivityLevel, Goal, Sex
+from app.schemas.diary import MealEntryOut
+from app.schemas.recommendation import RecommendationOut
 
 
 class UserOut(BaseModel):
@@ -51,3 +53,15 @@ class DailyTargets(BaseModel):
     fat_g: float
     carbs_g: float
     is_estimated: bool  # False если пользователь задал override вручную
+
+
+class DeleteAccountRequest(BaseModel):
+    password: str = Field(min_length=1, max_length=1024)
+
+
+class AccountExport(BaseModel):
+    exported_at: datetime
+    account: UserOut
+    profile: ProfileOut
+    entries: list[MealEntryOut]
+    recommendations: list[RecommendationOut]

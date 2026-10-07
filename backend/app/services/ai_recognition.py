@@ -1,8 +1,10 @@
 import base64
+import json
 import logging
 from typing import Optional
 
 import anthropic
+from pydantic import ValidationError
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("kbju.recognition")
@@ -31,7 +33,7 @@ class RecognitionError(Exception):
 def _media_type_for(extension: str) -> str:
     media_type = SUPPORTED_MEDIA_TYPES.get(extension.lower().lstrip("."))
     if media_type is None:
-        raise RecognitionError(f"Неподдерживаемый формат изображения: {extension}")
+        raise RecognitionError(f"Unsupported image format: {extension}")
     return media_type
 
 
@@ -74,16 +76,12 @@ def analyze_food_photo(image_bytes: bytes, extension: str) -> tuple[list[Recogni
 
     tool_use_block = next((block for block in response.content if block.type == "tool_use"), None)
     if tool_use_block is None:
-        raise RecognitionError("AI не вернул структурированный результат")
+        raise RecognitionError("The AI returned no structured result")
 
     payload = tool_use_block.input
-    logger.info("raw payload from Claude: %s", payload)
-    raw_items = payload.get("items", [])
-    # Claude usually returns a list of objects as specified in the tool schema, but
-    # occasionally restructures it as an object keyed by item name/index instead —
-    # normalize both shapes rather than crashing on the mismatch.
-    if isinstance(raw_items, dict):
-        raw_items = list(raw_items.values())
+    logger.debug("raw payload from Claude: %s", payload)
+
+    raw_items, notes = _unpack_payload(payload)
 
     items = []
     for raw_item in raw_items:
@@ -91,8 +89,34 @@ def analyze_food_photo(image_bytes: bytes, extension: str) -> tuple[list[Recogni
             continue
         try:
             items.append(RecognizedFoodItem(**raw_item))
-        except TypeError:
+        except (TypeError, ValidationError):
+            logger.warning("dropped a malformed item from the AI response")
             continue
 
-    notes = payload.get("notes")
     return items, notes
+
+
+def _unpack_payload(payload: dict) -> tuple[list, Optional[str]]:
+    """Claude usually follows the tool schema, but sometimes sends `items` as an object keyed by
+    dish, as a JSON string, or wraps everything in another {"items": ...}. Accept all of those
+    instead of silently reporting "no food found"."""
+    raw_items = payload.get("items", [])
+    notes = payload.get("notes")
+
+    if isinstance(raw_items, str):
+        try:
+            raw_items = json.loads(raw_items)
+        except ValueError:
+            logger.warning("items came back as text that is not JSON")
+            raw_items = []
+
+    if isinstance(raw_items, dict):
+        if isinstance(raw_items.get("items"), (list, dict, str)):
+            inner_notes = raw_items.get("notes")
+            notes = notes or inner_notes
+            return _unpack_payload({"items": raw_items["items"], "notes": notes})
+        raw_items = list(raw_items.values())
+
+    if not isinstance(raw_items, list):
+        raw_items = []
+    return raw_items, notes if isinstance(notes, str) else None

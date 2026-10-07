@@ -10,7 +10,7 @@ from app.config import get_settings
 settings = get_settings()
 Path(settings.storage_dir).mkdir(parents=True, exist_ok=True)
 
-app = FastAPI(title="KBJU Tracker API", version="0.1.0")
+app = FastAPI(title="Macros Tracker API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,

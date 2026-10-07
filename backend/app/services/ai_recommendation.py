@@ -22,22 +22,22 @@ class RecommendationError(Exception):
 def _format_profile_summary(profile: UserProfile) -> str:
     parts = []
     if profile.sex:
-        parts.append(f"пол: {profile.sex.value}")
+        parts.append(f"sex: {profile.sex.value}")
     if profile.height_cm:
-        parts.append(f"рост: {profile.height_cm} см")
+        parts.append(f"height: {profile.height_cm} cm")
     if profile.weight_kg:
-        parts.append(f"вес: {profile.weight_kg} кг")
+        parts.append(f"weight: {profile.weight_kg} kg")
     if profile.activity_level:
-        parts.append(f"активность: {profile.activity_level.value}")
+        parts.append(f"activity level: {profile.activity_level.value}")
     if profile.goal:
-        parts.append(f"цель: {profile.goal.value}")
-    return ", ".join(parts) if parts else "профиль не заполнен"
+        parts.append(f"goal: {profile.goal.value}")
+    return ", ".join(parts) if parts else "profile is empty"
 
 
 def _format_targets_summary(targets: DailyTargets) -> str:
     return (
-        f"калории: {targets.calories} ккал, белки: {targets.protein_g} г, "
-        f"жиры: {targets.fat_g} г, углеводы: {targets.carbs_g} г"
+        f"calories: {targets.calories} kcal, protein: {targets.protein_g} g, "
+        f"fat: {targets.fat_g} g, carbs: {targets.carbs_g} g"
     )
 
 
@@ -59,11 +59,11 @@ def _format_period_summary(db: Session, user_id, period_days: int, tz_name: str)
     ).all()
 
     if not daily_totals:
-        return f"За последние {period_days} дней нет ни одной записи в дневнике."
+        return f"There are no diary entries in the last {period_days} days."
 
     lines = [
-        f"{row.day}: {round(row.calories)} ккал, Б {round(row.protein_g)}г, "
-        f"Ж {round(row.fat_g)}г, У {round(row.carbs_g)}г"
+        f"{row.day}: {round(row.calories)} kcal, P {round(row.protein_g)}g, "
+        f"F {round(row.fat_g)}g, C {round(row.carbs_g)}g"
         for row in daily_totals
     ]
     return "\n".join(lines)
@@ -90,6 +90,6 @@ def generate_recommendation(
 
     text_block = next((block for block in response.content if block.type == "text"), None)
     if text_block is None:
-        raise RecommendationError("AI не вернул текстовый ответ")
+        raise RecommendationError("The AI returned no text")
 
     return text_block.text

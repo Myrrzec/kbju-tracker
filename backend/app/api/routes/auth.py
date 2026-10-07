@@ -17,7 +17,7 @@ from app.schemas.auth import LoginRequest, RefreshRequest, RegisterRequest, Toke
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-_TOO_MANY = "Слишком много попыток, попробуйте позже"
+_TOO_MANY = "Too many attempts, please try again later"
 _register_by_ip = RateLimiter(10, 3600, _TOO_MANY)
 _login_by_ip = RateLimiter(30, 900, _TOO_MANY)
 _login_by_email = RateLimiter(10, 900, _TOO_MANY)
@@ -29,7 +29,7 @@ def register(payload: RegisterRequest, request: Request, db: Session = Depends(g
     _register_by_ip.hit(client_ip(request))
     existing = db.query(User).filter(User.email == payload.email).first()
     if existing is not None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email уже зарегистрирован")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This email is already registered")
 
     user = User(email=payload.email, hashed_password=hash_password(payload.password))
     db.add(user)
@@ -51,7 +51,7 @@ def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)
     _login_by_email.hit(payload.email.lower())
     user = db.query(User).filter(User.email == payload.email).first()
     if user is None or not verify_password(payload.password, user.hashed_password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный email или пароль")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
 
     return TokenResponse(
         access_token=create_access_token(user.id),
@@ -65,11 +65,11 @@ def refresh(payload: RefreshRequest, request: Request, db: Session = Depends(get
     try:
         user_id = decode_token(payload.refresh_token, expected_type="refresh")
     except InvalidTokenError as exc:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Невалидный refresh-токен") from exc
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token") from exc
 
     user = db.get(User, user_id)
     if user is None or not user.is_active:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Пользователь не найден")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
     return TokenResponse(
         access_token=create_access_token(user.id),

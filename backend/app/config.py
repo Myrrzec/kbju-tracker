@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     ai_daily_limit_per_user: int = 60
     ai_daily_limit_total: int = 500
 
+    # Публичное демо без аккаунта: свой, отдельный бюджет, чтобы не трогать лимиты пользователей.
+    demo_daily_limit_per_ip: int = 3
+    demo_daily_limit_total: int = 100
+
     @field_validator("jwt_secret_key")
     @classmethod
     def _strong_jwt_secret(cls, value: str) -> str:
