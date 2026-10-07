@@ -29,6 +29,17 @@ class Settings(BaseSettings):
     demo_daily_limit_per_ip: int = 3
     demo_daily_limit_total: int = 100
 
+    @field_validator("database_url")
+    @classmethod
+    def _pin_postgres_driver(cls, value: str) -> str:
+        # Hosts hand out plain postgres:// or postgresql:// URLs. Newer SQLAlchemy releases pick a
+        # different default driver for those, so name the one in requirements.txt explicitly.
+        if value.startswith("postgres://"):
+            value = "postgresql://" + value[len("postgres://"):]
+        if value.startswith("postgresql://"):
+            value = "postgresql+psycopg2://" + value[len("postgresql://"):]
+        return value
+
     @field_validator("jwt_secret_key")
     @classmethod
     def _strong_jwt_secret(cls, value: str) -> str:
