@@ -1,12 +1,6 @@
 import { useState, type FormEvent } from "react";
+import { MEAL_LABELS } from "../lib/groupMeals";
 import type { MealEntryCreatePayload, MealType } from "../types";
-
-const MEAL_LABELS: Record<MealType, string> = {
-  breakfast: "Завтрак",
-  lunch: "Обед",
-  dinner: "Ужин",
-  snack: "Перекус",
-};
 
 export interface EntryFormInitial {
   name?: string;
@@ -28,7 +22,7 @@ interface EntryFormProps {
   fixedMealType?: MealType;
 }
 
-export function EntryForm({ initial, onSubmit, onCancel, submitLabel = "Добавить", fixedMealType }: EntryFormProps) {
+export function EntryForm({ initial, onSubmit, onCancel, submitLabel = "Add", fixedMealType }: EntryFormProps) {
   const [name, setName] = useState(initial?.name ?? "");
   const [mealType, setMealType] = useState<MealType>(initial?.meal_type ?? "lunch");
   const [grams, setGrams] = useState(initial?.grams?.toString() ?? "");
@@ -38,9 +32,6 @@ export function EntryForm({ initial, onSubmit, onCancel, submitLabel = "Доба
   const [carbsG, setCarbsG] = useState(initial?.carbs_g?.toString() ?? "");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const inputClass = "input";
-  const labelClass = "label";
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -57,7 +48,7 @@ export function EntryForm({ initial, onSubmit, onCancel, submitLabel = "Доба
     };
 
     if (!parsed.name || Object.values(parsed).some((v) => typeof v === "number" && Number.isNaN(v))) {
-      setError("Заполните название и числовые поля корректно");
+      setError("Enter a name and valid numbers in every field");
       return;
     }
 
@@ -69,7 +60,7 @@ export function EntryForm({ initial, onSubmit, onCancel, submitLabel = "Доба
         source: initial?.source ?? "manual",
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Не удалось сохранить запись");
+      setError(err instanceof Error ? err.message : "Couldn't save the entry");
     } finally {
       setLoading(false);
     }
@@ -77,58 +68,62 @@ export function EntryForm({ initial, onSubmit, onCancel, submitLabel = "Доба
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className={labelClass}>Название</label>
-        <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} />
-      </div>
+      <label className="block">
+        <span className="label">Name</span>
+        <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
+      </label>
 
       <div className="grid grid-cols-2 gap-3">
         {!fixedMealType && (
-        <div>
-          <label className={labelClass}>Приём пищи</label>
-          <select className={inputClass} value={mealType} onChange={(e) => setMealType(e.target.value as MealType)}>
-            {Object.entries(MEAL_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </div>
+          <label className="block">
+            <span className="label">Meal</span>
+            <select className="input" value={mealType} onChange={(e) => setMealType(e.target.value as MealType)}>
+              {Object.entries(MEAL_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
         )}
-        <div>
-          <label className={labelClass}>Вес порции, г</label>
-          <input className={inputClass} value={grams} onChange={(e) => setGrams(e.target.value)} />
-        </div>
+        <label className="block">
+          <span className="label">Portion, g</span>
+          <input className="input" inputMode="decimal" value={grams} onChange={(e) => setGrams(e.target.value)} />
+        </label>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div>
-          <label className={`${labelClass} !text-cal`}>Ккал</label>
-          <input className={inputClass} value={calories} onChange={(e) => setCalories(e.target.value)} />
-        </div>
-        <div>
-          <label className={`${labelClass} !text-protein`}>Белки</label>
-          <input className={inputClass} value={proteinG} onChange={(e) => setProteinG(e.target.value)} />
-        </div>
-        <div>
-          <label className={`${labelClass} !text-fat`}>Жиры</label>
-          <input className={inputClass} value={fatG} onChange={(e) => setFatG(e.target.value)} />
-        </div>
-        <div>
-          <label className={`${labelClass} !text-carbs`}>Углеводы</label>
-          <input className={inputClass} value={carbsG} onChange={(e) => setCarbsG(e.target.value)} />
-        </div>
+        <label className="block">
+          <span className="label !text-cal">Calories</span>
+          <input className="input" inputMode="decimal" value={calories} onChange={(e) => setCalories(e.target.value)} />
+        </label>
+        <label className="block">
+          <span className="label !text-protein">Protein, g</span>
+          <input className="input" inputMode="decimal" value={proteinG} onChange={(e) => setProteinG(e.target.value)} />
+        </label>
+        <label className="block">
+          <span className="label !text-fat">Fat, g</span>
+          <input className="input" inputMode="decimal" value={fatG} onChange={(e) => setFatG(e.target.value)} />
+        </label>
+        <label className="block">
+          <span className="label !text-carbs">Carbs, g</span>
+          <input className="input" inputMode="decimal" value={carbsG} onChange={(e) => setCarbsG(e.target.value)} />
+        </label>
       </div>
 
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {error && (
+        <p role="alert" className="text-sm text-danger animate-fade">
+          {error}
+        </p>
+      )}
 
       <div className="flex gap-2">
         <button type="submit" disabled={loading} className="btn btn-primary">
-          {loading ? "Сохраняем..." : submitLabel}
+          {loading ? "Saving…" : submitLabel}
         </button>
         {onCancel && (
           <button type="button" onClick={onCancel} className="btn-ghost">
-            Отмена
+            Cancel
           </button>
         )}
       </div>

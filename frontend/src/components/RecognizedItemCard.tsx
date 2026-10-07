@@ -3,9 +3,9 @@ import type { MealEntryCreatePayload, MealType, RecognizedFoodItem } from "../ty
 import { EntryForm } from "./EntryForm";
 
 const CONFIDENCE_LABELS: Record<string, { label: string; className: string }> = {
-  high: { label: "высокая уверенность", className: "text-ink-2 border-line" },
-  medium: { label: "средняя уверенность", className: "text-ink-2 border-line" },
-  low: { label: "низкая уверенность — проверьте вручную", className: "text-ink border-ink-3" },
+  high: { label: "High confidence", className: "text-ink-2 border-line" },
+  medium: { label: "Medium confidence", className: "text-ink-2 border-line" },
+  low: { label: "Low confidence, double-check", className: "text-ink border-ink-3" },
 };
 
 interface RecognizedItemCardProps {
@@ -21,8 +21,8 @@ export function RecognizedItemCard({ item, photoUrl, onAdd, mealType }: Recogniz
 
   if (added) {
     return (
-      <div className="bg-surface-2 border-l-[3px] border-protein rounded-xl px-5 py-4 text-ink-2">
-        «{item.name}» добавлено в дневник
+      <div className="bg-surface-2 border-l-[3px] border-protein rounded-xl px-5 py-4 text-ink-2 animate-fade">
+        “{item.name}” added to your diary
       </div>
     );
   }
@@ -44,7 +44,7 @@ export function RecognizedItemCard({ item, photoUrl, onAdd, mealType }: Recogniz
           photo_url: photoUrl,
           source: "photo_ai",
         }}
-        submitLabel="Добавить в дневник"
+        submitLabel="Add to diary"
         fixedMealType={mealType}
         onSubmit={async (payload) => {
           await onAdd(payload);

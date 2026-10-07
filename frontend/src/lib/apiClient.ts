@@ -29,6 +29,8 @@ export class ApiError extends Error {
 
 export class AuthExpiredError extends Error {}
 
+export const AUTH_EXPIRED_EVENT = "auth-expired";
+
 function extractMessage(body: ApiErrorBody, fallback: string): string {
   if (!body.detail) return fallback;
   if (typeof body.detail === "string") return body.detail;
@@ -80,11 +82,16 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
       if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
     }
 
-    return fetch(`${BASE_URL}${path}`, {
-      method,
-      headers,
-      body: isFormData ? (body as FormData) : body !== undefined ? JSON.stringify(body) : undefined,
-    });
+    try {
+      return await fetch(`${BASE_URL}${path}`, {
+        method,
+        headers,
+        body: isFormData ? (body as FormData) : body !== undefined ? JSON.stringify(body) : undefined,
+      });
+    } catch {
+      // network failure: on free hosting the server is often just waking up
+      throw new ApiError(0, "Can't reach the server. It may be waking up (free hosting), so try again in a few seconds.");
+    }
   };
 
   let response = await doFetch();
@@ -93,13 +100,14 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     const refreshed = await refreshAccessToken();
     if (!refreshed) {
       tokenStorage.clear();
-      throw new AuthExpiredError("Сессия истекла, войдите заново");
+      window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+      throw new AuthExpiredError("Your session expired, please sign in again");
     }
     response = await doFetch();
   }
 
   if (!response.ok) {
-    const message = await parseErrorBody(response, `Ошибка запроса (${response.status})`);
+    const message = await parseErrorBody(response, `Request failed (${response.status})`);
     throw new ApiError(response.status, message);
   }
 

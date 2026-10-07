@@ -40,22 +40,22 @@ export function AddEntryPanel({ title, date, loggedAt, children }: AddEntryPanel
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <h2 className="text-[22px] font-bold">{title}</h2>
         {mode === null && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 animate-fade">
             <button onClick={() => setMode("manual")} className="btn btn-secondary">
-              <PencilIcon /> Вручную
+              <PencilIcon /> Manually
             </button>
             <button onClick={() => setMode("photo")} className="btn btn-primary">
-              <CameraIcon /> По фото (ИИ)
+              <CameraIcon /> From photo (AI)
             </button>
           </div>
         )}
       </div>
 
       {mode === "manual" && (
-        <div className="mb-8 pb-8 border-b border-line-soft">
+        <div className="mb-8 pb-8 border-b border-line-soft animate-rise">
           {recentQuery.data && recentQuery.data.length > 0 && (
             <div className="mb-6">
-              <p className="label">Недавние блюда</p>
+              <p className="label">Recent dishes</p>
               <div className="flex flex-wrap gap-2">
                 {recentQuery.data.map((entry) => (
                   <button
@@ -63,7 +63,7 @@ export function AddEntryPanel({ title, date, loggedAt, children }: AddEntryPanel
                     type="button"
                     onClick={() => setPrefill((p) => ({ key: p.key + 1, entry }))}
                     className="btn btn-secondary !min-h-9 !py-1.5 !px-3 !text-sm max-w-full"
-                    title={`${entry.grams} г · ${Math.round(entry.calories)} ккал`}
+                    title={`${entry.grams} g · ${Math.round(entry.calories)} kcal`}
                   >
                     <span className="truncate">{entry.name}</span>
                   </button>
@@ -96,7 +96,7 @@ export function AddEntryPanel({ title, date, loggedAt, children }: AddEntryPanel
       )}
 
       {mode === "photo" && (
-        <div className="mb-8 pb-8 border-b border-line-soft">
+        <div className="mb-8 pb-8 border-b border-line-soft animate-rise">
           <PhotoRecognizer onAdd={(payload) => createMutation.mutateAsync(payload)} onClose={() => setMode(null)} />
         </div>
       )}

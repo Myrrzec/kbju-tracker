@@ -12,3 +12,11 @@ export function updateProfile(payload: ProfileUpdatePayload) {
 export function getTargets() {
   return apiRequest<DailyTargets>("/users/me/targets");
 }
+
+export function exportMyData() {
+  return apiRequest<unknown>("/users/me/export");
+}
+
+export function deleteAccount(password: string) {
+  return apiRequest<void>("/users/me", { method: "DELETE", body: { password } });
+}

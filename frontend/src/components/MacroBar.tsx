@@ -1,4 +1,5 @@
 import { AlertIcon } from "./icons";
+import { useEntered } from "../lib/motion";
 
 const STYLES = {
   protein: { text: "text-protein", bg: "bg-protein", glow: "shadow-glow-protein" },
@@ -18,6 +19,7 @@ export function MacroBar({ label, current, target, unit, metric }: MacroBarProps
   const style = STYLES[metric];
   const percent = target > 0 ? Math.min((current / target) * 100, 100) : 0;
   const isOver = target > 0 && current > target;
+  const width = useEntered(percent);
 
   return (
     <div>
@@ -25,7 +27,7 @@ export function MacroBar({ label, current, target, unit, metric }: MacroBarProps
         <span className={`font-semibold ${style.text}`}>{label}</span>
         <span className={`font-semibold flex items-center gap-1.5 ${style.text}`}>
           {isOver && (
-            <span title="Выше цели" aria-label="Выше цели">
+            <span title="Over target" aria-label="Over target">
               <AlertIcon size={14} />
             </span>
           )}
@@ -34,8 +36,10 @@ export function MacroBar({ label, current, target, unit, metric }: MacroBarProps
       </div>
       <div className="h-2 rounded-full bg-line-soft">
         <div
-          className={`h-full rounded-full ${style.bg} ${style.glow} ${isOver ? "animate-pulse" : ""}`}
-          style={{ width: `${percent}%` }}
+          className={`h-full rounded-full ${style.bg} ${style.glow} transition-[width] duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isOver ? "animate-pulse" : ""
+          }`}
+          style={{ width: `${width}%` }}
         />
       </div>
     </div>

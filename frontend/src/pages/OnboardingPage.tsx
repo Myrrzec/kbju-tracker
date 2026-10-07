@@ -2,13 +2,16 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as usersApi from "../lib/api/users";
 import { ProfileForm } from "../components/ProfileForm";
+import { QueryError } from "../components/QueryError";
+import { Skeleton } from "../components/Skeleton";
 import { Logo } from "../components/Logo";
 
 export function OnboardingPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: profile, isLoading } = useQuery({ queryKey: ["profile"], queryFn: usersApi.getProfile });
+  const profileQuery = useQuery({ queryKey: ["profile"], queryFn: usersApi.getProfile });
+  const profile = profileQuery.data;
 
   const mutation = useMutation({
     mutationFn: usersApi.updateProfile,
@@ -20,22 +23,26 @@ export function OnboardingPage() {
   });
 
   return (
-    <div className="max-w-2xl mx-auto px-5 sm:px-0 py-10 sm:py-14 space-y-9">
+    <div className="max-w-2xl mx-auto px-5 sm:px-0 py-10 sm:py-14 space-y-9 stagger">
       <Logo />
       <div>
-        <h1 className="text-[40px] leading-tight font-bold">Расскажите о себе</h1>
-        <p className="text-ink-2 mt-2">
-          Это нужно, чтобы рассчитать вашу суточную норму калорий, белков, жиров и углеводов.
-        </p>
+        <h1 className="text-[34px] sm:text-[40px] leading-tight font-bold">Tell us about yourself</h1>
+        <p className="text-ink-2 mt-2">We use this to work out your daily calories, protein, fat and carbs.</p>
       </div>
       <div className="card">
-        {isLoading || !profile ? (
-          <p className="text-ink-2">Загрузка...</p>
+        {profileQuery.isError ? (
+          <QueryError message="Couldn't load your profile." onRetry={() => profileQuery.refetch()} />
+        ) : !profile ? (
+          <div className="space-y-5" aria-hidden="true">
+            <Skeleton className="h-11" />
+            <Skeleton className="h-11" />
+            <Skeleton className="h-11" />
+          </div>
         ) : (
           <ProfileForm
             initial={profile}
             onSubmit={(payload) => mutation.mutateAsync(payload)}
-            submitLabel="Сохранить и продолжить"
+            submitLabel="Save and continue"
           />
         )}
       </div>

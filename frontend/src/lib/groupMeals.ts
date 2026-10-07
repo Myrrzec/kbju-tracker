@@ -1,10 +1,10 @@
 import type { MealEntry, MealType } from "../types";
 
 export const MEAL_LABELS: Record<MealType, string> = {
-  breakfast: "Завтрак",
-  lunch: "Обед",
-  dinner: "Ужин",
-  snack: "Перекус",
+  breakfast: "Breakfast",
+  lunch: "Lunch",
+  dinner: "Dinner",
+  snack: "Snack",
 };
 
 const MANUAL_GAP_MS = 30 * 60 * 1000;
@@ -23,8 +23,8 @@ interface RawGroup {
   entries: MealEntry[];
 }
 
-// Блюда с одного фото — один приём пищи; ручные записи одного типа
-// внутри 30 минут друг от друга — тоже один приём.
+// Dishes from one photo are one meal; manual entries of the same type
+// logged within 30 minutes of each other are also one meal.
 export function groupIntoMeals(entries: MealEntry[]): MealGroup[] {
   const sorted = [...entries].sort((a, b) => new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime());
 

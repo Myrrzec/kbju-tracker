@@ -9,9 +9,10 @@ export function todayStr(): string {
   return toDateInputValue(new Date());
 }
 
-export function formatDateRu(iso: string): string {
-  const [y, m, d] = iso.split("-");
-  return `${d}.${m}.${y}`;
+// "2026-10-06" -> "Tuesday, October 6" (built from parts so the time zone cannot shift the day)
+export function formatDateLong(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 }
 
 export const userTimeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";

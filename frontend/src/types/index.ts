@@ -101,6 +101,11 @@ export interface RecognizedFoodItem {
   carbs_g: number;
 }
 
+export interface DemoRecognitionResult {
+  items: RecognizedFoodItem[];
+  notes: string | null;
+}
+
 export interface PhotoRecognitionResult {
   items: RecognizedFoodItem[];
   notes: string | null;
