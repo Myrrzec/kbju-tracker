@@ -36,4 +36,4 @@ services:
       - key: CORS_ORIGINS
         value: http://localhost:3000
       - key: CORS_ORIGIN_REGEX
-        value: ^https://([a-z0-9-]+\.)?kbju-tracker\.pages\.dev$
+        value: '^https://(macros\.makeworks\.dev|([a-z0-9-]+\.)?kbju-tracker\.pages\.dev)$'

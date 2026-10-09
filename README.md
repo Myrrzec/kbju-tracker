@@ -2,7 +2,7 @@
 
 Track calories, protein, fat and carbs. Photograph a meal and the AI estimates what's on the plate; you correct the numbers and save them to a daily diary.
 
-**Live demo: [kbju-tracker.pages.dev](https://kbju-tracker.pages.dev)**
+**Live demo: [macros.makeworks.dev](https://macros.makeworks.dev)**
 Hosted on free tiers, so the first request after a pause can take up to a minute while the server wakes up.
 
 ## What it does
